@@ -1,0 +1,151 @@
+:root {
+  --lighter: #f5f5f5;
+  --light: #f2ead3;
+  --dark: #dfd7bf;
+  --darker: #3f2305;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  color: var(--darker);
+}
+
+html {
+  font-size: 62.5%; /* (62.5/100) * 16px = 10px */
+  -webkit-text-size-adjust: none; /* for iOS Safari */
+  text-size-adjust: none; /* for other mobile browsers */
+}
+
+body {
+  height: 100vh;
+  margin: 0;
+  background-color: var(--lighter);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+menu:not(article menu),
+ol:not(article ol),
+ul:not(article ul) {
+  list-style: none;
+}
+
+menu,
+ol,
+ul {
+  padding-left: 0;
+}
+
+article ol,
+article ul {
+  list-style-position: inside;
+}
+
+a {
+  /* Places underlines below the descenders */
+  text-underline-position: under;
+
+  /* Sets the thickness as a percentage of the font size */
+  text-decoration-thickness: 8;
+}
+
+button.look-like-anchor {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  text-decoration: underline;
+  cursor: pointer;
+  text-underline-position: under;
+  text-decoration-thickness: 8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+label,
+button,
+select,
+summary,
+[type="radio"],
+[type="submit"],
+[type="checkbox"] {
+  cursor: pointer;
+}
+
+input,
+button {
+  border: 1px solid var(--darker);
+  padding: 0.5rem;
+  background-color: var(--lighter);
+}
+
+.error {
+  color: red;
+  margin: 0;
+}
+
+/* #page {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+} */
+
+#auth-form {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  gap: 1rem;
+  height: 100%;
+}
+
+.auth-controls {
+  grid-column: 3/4;
+  grid-row: 1/2;
+  padding: 1rem;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+}
+
+.dev-controls {
+  grid-column: 3/4;
+  grid-row: 3/4;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: row-reverse;
+  padding: 1rem;
+}
+
+.main-container {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  grid-template-columns: 1fr 500px 1fr;
+  height: 100%;
+  background-color: var(--dark);
+}
+
+.main-content {
+  padding: 1.5rem;
+  grid-column: 2/3;
+  grid-row: 2/3;
+  background-color: var(--light);
+  border: 1px solid var(--darker);
+}
