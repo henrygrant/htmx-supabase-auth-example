@@ -4,5 +4,5 @@ WORKDIR /usr/app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-EXPOSE 3000
+EXPOSE $PORT
 CMD ["npm", "start"]

@@ -21,7 +21,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT;
 const HOSTNAME = "localhost";
 const HOST = `${HOSTNAME}:${PORT}`;
 
