@@ -1,0 +1,16 @@
+version: "3"
+services:
+  htmx-supabase-auth:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./:/usr/app
+    container_name: htmx-supabase-auth
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    command: npm run dev

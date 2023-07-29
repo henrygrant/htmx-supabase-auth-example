@@ -21,9 +21,8 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 const app = express();
-const PORT = process.env.PORT;
-const HOSTNAME = "localhost";
-const HOST = `${HOSTNAME}:${PORT}`;
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || `localhost:${PORT}`;
 
 app.use(cookieParser());
 app.use(bodyParser.json());
