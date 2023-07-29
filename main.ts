@@ -135,14 +135,14 @@ app.post("/updatePassword", async (req, res) => {
     res.send(updatePasswordView("enter the new password first"));
     return;
   }
-  const { data, error } = await supabase.auth.updateUser({
+  const { error } = await supabase.auth.updateUser({
     password: req.body.password as string,
   });
   if (error) {
     console.error(error);
     res.send(signInView("error resetting password"));
   } else {
-    res.send(authenticatedView(/* html */ `<p>password updated</p>`));
+    res.redirect("/");
   }
 });
 
