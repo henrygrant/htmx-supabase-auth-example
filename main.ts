@@ -4,7 +4,13 @@ import cookieParser from "cookie-parser";
 import * as path from "path";
 import * as fs from "fs";
 import { createServerClient } from "./lib/authUtil";
-import { authenticatedView, mainView, unauthenticatedView } from "./views";
+import {
+  authenticatedView,
+  mainView,
+  updatePasswordView,
+  signInView,
+  signUpView,
+} from "./views";
 import "dotenv/config";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -24,6 +30,157 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("views", [path.join(__dirname, "views")]);
 app.use(express.static("public"));
+
+/*
+  main route 
+  checks authentication status of the user and sends the appropriate view 
+*/
+app.get("/", async (req, res) => {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    req,
+    res,
+  });
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error(error);
+  }
+  res.send(
+    !!data.session
+      ? mainView(
+          authenticatedView(/* html */ `<div>Hi there is a session</div>`)
+        )
+      : mainView(signInView())
+  );
+});
+
+/*
+  session checker
+  will be called any time the client gets a SIGNED_IN or SIGNED_OUT event
+  punts user if no session
+*/
+app.post("/authChange", async (req, res) => {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    req,
+    res,
+  });
+  const { data, error } = await supabase.auth.getSession();
+  if (!data.session || error) {
+    res.send(signInView());
+  } else {
+    res.send(authenticatedView("<div>Authenticated!</div>"));
+  }
+});
+
+/*
+  callback for signup
+*/
+app.get("/authCallback", async (req, res) => {
+  const code = req.query.code as string;
+  if (code) {
+    const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      req,
+      res,
+    });
+    await supabase.auth.exchangeCodeForSession(code);
+    res.redirect("/");
+  }
+});
+
+/*
+  handles user beginning to reset their password
+*/
+app.post("/resetPassword", async (req, res) => {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    req,
+    res,
+  });
+  if (!req.body.email) {
+    res.send(signInView("enter your email first"));
+    return;
+  }
+  const { data, error } = await supabase.auth.resetPasswordForEmail(
+    req.body.email as string,
+    {
+      redirectTo: `http://${HOST}/updatePassword`,
+    }
+  );
+  if (error) {
+    console.error(error);
+    res.send(signInView("error resetting password"));
+  } else {
+    res.send(signInView("check your email"));
+  }
+});
+
+/*
+  page user comes back to after clicking reset the link in their email
+*/
+app.get("/updatePassword", async (req, res) => {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    req,
+    res,
+  });
+  res.send(mainView(updatePasswordView()));
+});
+
+/*
+  handles user actually updating their password
+*/
+app.post("/updatePassword", async (req, res) => {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    req,
+    res,
+  });
+  if (!req.body.password) {
+    res.send(updatePasswordView("enter the new password first"));
+    return;
+  }
+  const { data, error } = await supabase.auth.updateUser({
+    password: req.body.password as string,
+  });
+  if (error) {
+    console.error(error);
+    res.send(signInView("error resetting password"));
+  } else {
+    res.send(authenticatedView(/* html */ `<p>password updated</p>`));
+  }
+});
+
+/*
+  shows authenticated view 
+*/
+app.get("/authenticated", async (req, res) => {
+  res.send(
+    authenticatedView(/* html */ `<p>home page, build app from here</p>`)
+  );
+});
+
+/*
+  shows signin form
+*/
+app.get("/signIn", async (req, res) => {
+  res.send(signInView());
+});
+
+/*
+  shows signup form
+*/
+app.get("/signUp", async (req, res) => {
+  res.send(signUpView());
+});
+
+/*
+  shows successful signup message
+*/
+app.get("/checkEmail", async (req, res) => {
+  res.send(/* html */ `<div>check your email</div>`);
+});
+
+/*
+  irrelevant for example
+  serves the supabaseAuthModule.js file with the correct variables
+  to keep them declared in one place
+*/
 app.get("/scripts/supabaseAuthModuleWithVars.js", (req, res) => {
   fs.readFile(
     path.join(__dirname, "public", "scripts", "supabaseAuthModule.js"),
@@ -44,30 +201,11 @@ app.get("/scripts/supabaseAuthModuleWithVars.js", (req, res) => {
   );
 });
 
-// checks authentication status of the user and sends the appropriate view
-// also handles code exchange
-app.get("/", async (req, res) => {
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    req,
-    res,
-  });
-  const code = req.query.code as string;
-  if (code) {
-    const sbResp = await supabase.auth.exchangeCodeForSession(code);
-  }
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  res.send(
-    !!session
-      ? mainView(authenticatedView(/* html */ `<div>hi</div>`))
-      : mainView(unauthenticatedView)
-  );
-});
-
-// querys the test table for its records
-// table has a RLS rule to only allow SELECTs from authenticated users
+/*
+  irrelevant for example
+  querys the test table for its records
+  table has a RLS rule to only allow SELECTs from authenticated users
+*/
 app.get("/lookup", async (req, res) => {
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     req,
@@ -77,32 +215,5 @@ app.get("/lookup", async (req, res) => {
   if (error) console.error(error);
   res.send(data);
 });
-
-// will be called any time the client gets something back from
-// supabase.auth.onAuthStateChanged
-// the change is picked up from the req cookies
-app.post("/authChange", async (req, res) => {
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    req,
-    res,
-  });
-  const { data, error } = await supabase.auth.getSession();
-  if (!data.session || error) {
-    res.send(unauthenticatedView);
-  } else {
-    res.send(authenticatedView("<div>Authenticated!</div>"));
-  }
-});
-
-// app.get("/auth/callback", async (req, res) => {
-//   const code = req.query.code as string;
-//   if (code) {
-//     const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-//       req,
-//       res,
-//     });
-//     const sbResp = await supabase.auth.exchangeCodeForSession(code);
-//   }
-// });
 
 app.listen(PORT);

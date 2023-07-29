@@ -34,8 +34,5 @@ document.supabase = createBrowserClient(
   "SUPABASE_ANON_KEY_REPLACE_ME"
 );
 document.supabase.auth.onAuthStateChange((event, session) => {
-  document.dispatchEvent(
-    new CustomEvent("supabase-auth-change", { detail: event })
-  );
-  document.supabasesession = event;
+  document.supabasesession = session;
 });

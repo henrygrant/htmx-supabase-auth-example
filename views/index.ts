@@ -25,6 +25,7 @@ export const mainView = (inner?: string) => {
     </head>
     
     <body>
+
       <div id="result">Nothing</div>
       <button hx-get="/lookup" hx-target="#result" hx-swap="innerHTML">lookup</button>
       <main class="main-container" id="page" hx-trigger="supabase-auth-change from:document" hx-post="/authChange" hx-swap="innerHTML">
@@ -35,9 +36,10 @@ export const mainView = (inner?: string) => {
     </html>
   `;
 };
+
 export const authenticatedView = (inner?: string) => {
   return /* html */ `
-    <div class="auth-controls">
+    <div class="auth-controls" hx-get="/signIn" hx-swap="innerHTML" hx-trigger="signout-event from:document" hx-target=".main-container">
       <button onclick="signout()">sign out</button>
     </div>
     ${
@@ -50,13 +52,44 @@ export const authenticatedView = (inner?: string) => {
     }
   `;
 };
-export const unauthenticatedView = /* html */ `
-  <div class="main-content">
-    <div id="auth-form">
-      <input id="email" type="text" name="email" placeholder="email" />
-      <input id="password" type="password" name="password" placeholder="password" />
-      <button onclick="signin()">sign in</button>
-      <button class="look-like-anchor" hx-get="/component/signup" hx-target=".main-content" hx-swap="innerHTML">sign up instead</button>
+
+export const updatePasswordView = (message?: string) => {
+  return /* html */ `
+    <div class="main-content">
+      ${message ? `<p>${message}</p>` : ""}
+      <form id="auth-form" hx-post="/updatePassword" hx-target=".main-container" hx-swap="innerHTML">
+        <input id="password" type="password" name="password" placeholder="new password" />
+        <button type="submit">update</button>
+      </div>
     </div>
-  </div>
-`;
+  `;
+};
+
+export const signInView = (message?: string) => {
+  return /* html */ `
+    <div class="main-content" hx-get="/authenticated" hx-swap="innerHTML" hx-trigger="signin-event from:document" hx-target=".main-container">
+      ${message ? `<p>${message}</p>` : ""}
+      <form id="auth-form" hx-post="/resetPassword" hx-target=".main-container" hx-swap="innerHTML">
+        <input id="email" type="text" name="email" placeholder="email" />
+        <input id="password" type="password" name="password" placeholder="password" />
+        <button type="button" onclick="signin()">sign in</button>
+        <button type="submit" class="look-like-anchor" hx-get="/checkEmail" hx-swap="innerHTML" hx-trigger="supabase-password-reset from:document" hx-target=".main-container">reset password</button>
+        <button type="button" class="look-like-anchor" hx-get="/signUp" hx-target=".main-container" hx-swap="innerHTML">sign up instead</button>
+      </div>
+    </div>
+  `;
+};
+
+export const signUpView = (message?: string) => {
+  return /* html */ `
+    <div class="main-content" hx-get="/checkEmail" hx-swap="innerHTML" hx-trigger="signup-event from:document">
+      ${message ? `<p>${message}</p>` : ""}
+      <div id="auth-form">
+        <input id="email" type="text" name="email" placeholder="email" />
+        <input id="password" type="password" name="password" placeholder="password" />
+        <button type="button" onclick="signup()">sign up</button>
+        <button type="button" class="look-like-anchor" hx-get="/signIn" hx-target=".main-container" hx-swap="innerHTML">sign in instead</button>
+      </div>
+    </div>
+  `;
+};
