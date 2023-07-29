@@ -201,19 +201,4 @@ app.get("/scripts/supabaseAuthModuleWithVars.js", (req, res) => {
   );
 });
 
-/*
-  irrelevant for example
-  querys the test table for its records
-  table has a RLS rule to only allow SELECTs from authenticated users
-*/
-app.get("/lookup", async (req, res) => {
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    req,
-    res,
-  });
-  const { data, error } = await supabase.from("test").select();
-  if (error) console.error(error);
-  res.send(data);
-});
-
 app.listen(PORT);

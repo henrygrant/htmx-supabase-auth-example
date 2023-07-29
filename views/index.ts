@@ -25,9 +25,6 @@ export const mainView = (inner?: string) => {
     </head>
     
     <body>
-
-      <div id="result">Nothing</div>
-      <button hx-get="/lookup" hx-target="#result" hx-swap="innerHTML">lookup</button>
       <main class="main-container" id="page" hx-trigger="supabase-auth-change from:document" hx-post="/authChange" hx-swap="innerHTML">
         ${inner ? inner : ""}
       </main>
